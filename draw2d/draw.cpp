@@ -6,13 +6,23 @@
 
 #include "surface.hpp"
 
-void draw_line_solid( Surface& aSurface, Vec2f aBegin, Vec2f aEnd, ColorU8_sRGB aColor )
+void draw_line_solid(Surface& aSurface, Vec2f aBegin, Vec2f aEnd, ColorU8_sRGB aColor)
 {
-    // Extracts the integer coordinates of the start and end points
+    // Extract integer coordinates of start and end points
     int x0 = static_cast<int>(aBegin.x);
     int y0 = static_cast<int>(aBegin.y);
     int x1 = static_cast<int>(aEnd.x);
     int y1 = static_cast<int>(aEnd.y);
+
+    // Get screen boundaries
+    int width = aSurface.get_width();
+    int height = aSurface.get_height();
+
+    // Check if the entire line is outside the screen bounds
+    if ((x0 < 0 && x1 < 0) || (x0 >= width && x1 >= width) ||
+        (y0 < 0 && y1 < 0) || (y0 >= height && y1 >= height)) {
+        return; // Entire line is out of bounds, no need to draw
+    }
 
     // Bresenham's algorithm variables
     int dx = std::abs(x1 - x0);
@@ -21,13 +31,14 @@ void draw_line_solid( Surface& aSurface, Vec2f aBegin, Vec2f aEnd, ColorU8_sRGB 
     int sy = (y0 < y1) ? 1 : -1;
     int err = dx - dy;
 
+    // Drawing loop with clipping
     while (true) {
-        // Draw current pixel
-        if (x0 >= 0 && x0 < aSurface.get_width() && y0 >= 0 && y0 < aSurface.get_height()) {
+        // Draw current pixel only if it's within bounds
+        if (x0 >= 0 && x0 < width && y0 >= 0 && y0 < height) {
             aSurface.set_pixel_srgb(x0, y0, aColor);
         }
 
-        // Determine whether you have reached the end
+        // Check if we've reached the endpoint
         if (x0 == x1 && y0 == y1) break;
 
         // Update errors and coordinates
