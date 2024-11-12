@@ -49,14 +49,39 @@ std::unique_ptr<ImageRGBA> load_image( char const* aPath )
 	);
 }
 
-void blit_masked( Surface& aSurface, ImageRGBA const& aImage, Vec2f aPosition )
+void blit_masked(Surface& aSurface, ImageRGBA const& aImage, Vec2f aPosition)
 {
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
-	(void)aSurface;  // Avoid warnings about unused arguments until the
-	(void)aImage;    // function is properly implemented.
-	(void)aPosition;
+    int startX = static_cast<int>(aPosition.x);
+    int startY = static_cast<int>(aPosition.y);
+
+    int imageWidth = aImage.get_width();
+    int imageHeight = aImage.get_height();
+
+    int surfaceWidth = aSurface.get_width();
+    int surfaceHeight = aSurface.get_height();
+
+    // 遍历图像的每个像素
+    for (int y = 0; y < imageHeight; ++y) {
+        for (int x = 0; x < imageWidth; ++x) {
+            // 获取图像中的当前像素颜色
+            ColorU8_sRGB_Alpha color = aImage.get_pixel(x, y);
+
+            // 跳过 Alpha 值小于 128 的像素
+            if (color.a < 128) {
+                continue;
+            }
+
+            // 计算像素在目标 Surface 上的位置
+            int destX = startX + x;
+            int destY = startY + y;
+
+            // 检查目标位置是否在 Surface 的范围内
+            if (destX >= 0 && destX < surfaceWidth && destY >= 0 && destY < surfaceHeight) {
+                // 在目标 Surface 上设置像素颜色，忽略 Alpha 通道
+                aSurface.set_pixel_srgb(destX, destY, {color.r, color.g, color.b});
+            }
+        }
+    }
 }
 
 namespace
