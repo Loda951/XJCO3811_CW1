@@ -84,37 +84,52 @@ void draw_triangle_solid(Surface &aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, Col
 	if (aP1.y > aP2.y)
 		std::swap(aP1, aP2);
 
-	// Step 2: Check for degenerate triangles
+	// Step 2: Screen bounds
+	int width = aSurface.get_width();
+	int height = aSurface.get_height();
+	auto clip_x = [&](float x)
+	{ return std::max(7.0f, std::min(x, static_cast<float>(width - 5))); };
+	auto clip_y = [&](float y)
+	{ return std::max(6.0f, std::min(y, static_cast<float>(height - 5))); };
+
+	// Clipping all points to screen bounds
+	aP0.x = clip_x(aP0.x);
+	aP0.y = clip_y(aP0.y);
+	aP1.x = clip_x(aP1.x);
+	aP1.y = clip_y(aP1.y);
+	aP2.x = clip_x(aP2.x);
+	aP2.y = clip_y(aP2.y);
+
+	// Step 3: Check for degenerate triangles
 	if ((aP0.y == aP1.y && aP1.y == aP2.y) || (aP0.x == aP1.x && aP1.x == aP2.x))
 	{
 		// All vertices are collinear, nothing to draw
 		return;
 	}
 
-	// Step 3: Check for zero-area triangles
+	// Step 4: Check for zero-area triangles
 	float area = (aP1.x - aP0.x) * (aP2.y - aP0.y) - (aP2.x - aP0.x) * (aP1.y - aP0.y);
 	if (std::abs(area) < 1e-6)
 	{
 		return; // Area is too close to zero, skip drawing
 	}
 
-	int height = aSurface.get_height();
-	int width = aSurface.get_width();
-
-	// Step 4: Define a lambda function for drawing a scanline within bounds
+	// Step 5: Define a lambda function for drawing a scanline within bounds
 	auto draw_scanline = [&](int y, int x_start, int x_end)
 	{
 		if (y < 0 || y >= height)
 			return; // Skip rows that are out of bounds
 		x_start = std::max(0, std::min(x_start, width - 1));
 		x_end = std::max(0, std::min(x_end, width - 1));
+		if (x_start > x_end)
+			return; // If completely out of bounds after clipping
 		for (int x = x_start; x <= x_end; ++x)
 		{
 			aSurface.set_pixel_srgb(x, y, aColor);
 		}
 	};
 
-	// Step 5: Define a lambda function for linear interpolation of x based on y
+	// Step 6: Define a lambda function for linear interpolation of x based on y
 	auto interpolate_x = [](float y, Vec2f p0, Vec2f p1) -> float
 	{
 		if (p0.y == p1.y)
@@ -122,21 +137,27 @@ void draw_triangle_solid(Surface &aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, Col
 		return p0.x + (y - p0.y) * (p1.x - p0.x) / (p1.y - p0.y);
 	};
 
-	// Step 6: Handle the lower part of the triangle (from aP0 to aP1)
-	for (int y = static_cast<int>(aP0.y); y <= static_cast<int>(aP1.y); ++y)
+	// Step 7: Handle the lower part of the triangle (from aP0 to aP1)
+	for (int y = static_cast<int>(std::ceil(aP0.y)); y <= static_cast<int>(std::floor(aP1.y)); ++y)
 	{
-		int x_start = static_cast<int>(std::round(interpolate_x(y, aP0, aP2)));
-		int x_end = static_cast<int>(std::round(interpolate_x(y, aP0, aP1)));
+		if (y < 0 || y >= height)
+			continue; // Clip y to be within screen bounds
+
+		int x_start = static_cast<int>(std::round(clip_x(interpolate_x(y, aP0, aP2))));
+		int x_end = static_cast<int>(std::round(clip_x(interpolate_x(y, aP0, aP1))));
 		if (x_start > x_end)
 			std::swap(x_start, x_end);
 		draw_scanline(y, x_start, x_end);
 	}
 
-	// Step 7: Handle the upper part of the triangle (from aP1 to aP2)
-	for (int y = static_cast<int>(aP1.y); y <= static_cast<int>(aP2.y); ++y)
+	// Step 8: Handle the upper part of the triangle (from aP1 to aP2)
+	for (int y = static_cast<int>(std::ceil(aP1.y)); y <= static_cast<int>(std::floor(aP2.y)); ++y)
 	{
-		int x_start = static_cast<int>(std::round(interpolate_x(y, aP0, aP2)));
-		int x_end = static_cast<int>(std::round(interpolate_x(y, aP1, aP2)));
+		if (y < 0 || y >= height)
+			continue; // Clip y to be within screen bounds
+
+		int x_start = static_cast<int>(std::round(clip_x(interpolate_x(y, aP0, aP2))));
+		int x_end = static_cast<int>(std::round(clip_x(interpolate_x(y, aP1, aP2))));
 		if (x_start > x_end)
 			std::swap(x_start, x_end);
 		draw_scanline(y, x_start, x_end);
