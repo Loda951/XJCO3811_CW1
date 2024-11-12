@@ -195,22 +195,55 @@ void draw_triangle_solid(Surface &aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, Col
     }
 }
 
-
 void draw_triangle_interp(Surface &aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, ColorF aC0, ColorF aC1, ColorF aC2)
 {
-	// TODO: your implementation goes here
-	// TODO: your implementation goes here
-	// TODO: your implementation goes here
+    if (aP0.y > aP1.y) std::swap(aP0, aP1);
+    if (aP0.y > aP2.y) std::swap(aP0, aP2);
+    if (aP1.y > aP2.y) std::swap(aP1, aP2);
 
-	// TODO: remove the following when you start your implementation
-	(void)aSurface; // Avoid warnings about unused arguments until the function
-	(void)aP0;		// is properly implemented.
-	(void)aP1;
-	(void)aP2;
-	(void)aC0;
-	(void)aC1;
-	(void)aC2;
+    int height = aSurface.get_height();
+    int width = aSurface.get_width();
+
+    auto linear_to_srgb = [](float linear) -> uint8_t {
+        return (linear <= 0.0031308f) ? 
+            static_cast<uint8_t>(std::round(linear * 12.92f * 255.f)) : 
+            static_cast<uint8_t>(std::round((1.055f * std::pow(linear, 1.f / 2.4f) - 0.055f) * 255.f));
+    };
+
+    auto barycentric_weights = [&](Vec2f p) -> Vec2f {
+        float denom = (aP1.y - aP2.y) * (aP0.x - aP2.x) + (aP2.x - aP1.x) * (aP0.y - aP2.y);
+        Vec2f weights;
+        weights.x = ((aP1.y - aP2.y) * (p.x - aP2.x) + (aP2.x - aP1.x) * (p.y - aP2.y)) / denom;
+        weights.y = ((aP2.y - aP0.y) * (p.x - aP2.x) + (aP0.x - aP2.x) * (p.y - aP2.y)) / denom;
+        return weights;
+    };
+
+    for (int y = static_cast<int>(std::floor(aP0.y)); y <= static_cast<int>(std::ceil(aP2.y)); ++y) {
+        for (int x = static_cast<int>(std::floor(std::min({aP0.x, aP1.x, aP2.x}))); x <= static_cast<int>(std::ceil(std::max({aP0.x, aP1.x, aP2.x}))); ++x) {
+            if (x < 0 || x >= width || y < 0 || y >= height) continue;
+
+            Vec2f weights = barycentric_weights(Vec2f{ static_cast<float>(x), static_cast<float>(y) });
+            float w2 = 1.0f - weights.x - weights.y;
+
+            if (weights.x >= 0 && weights.y >= 0 && w2 >= 0) {
+                ColorF interpolatedColor = {
+                    weights.x * aC0.r + weights.y * aC1.r + w2 * aC2.r,
+                    weights.x * aC0.g + weights.y * aC1.g + w2 * aC2.g,
+                    weights.x * aC0.b + weights.y * aC1.b + w2 * aC2.b
+                };
+
+                ColorU8_sRGB finalColor{
+                    linear_to_srgb(interpolatedColor.r),
+                    linear_to_srgb(interpolatedColor.g),
+                    linear_to_srgb(interpolatedColor.b)
+                };
+
+                aSurface.set_pixel_srgb(x, y, finalColor);
+            }
+        }
+    }
 }
+
 
 void draw_rectangle_solid(Surface &aSurface, Vec2f aMinCorner, Vec2f aMaxCorner, ColorU8_sRGB aColor)
 {
