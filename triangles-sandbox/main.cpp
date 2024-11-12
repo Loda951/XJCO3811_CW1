@@ -229,71 +229,74 @@ try
 
 		case 4:
 		{
+			// normal case
 			draw_triangle_solid(surface,
-								{20.f, 20.f},
-								{40.f, 60.f},
-								{10.f, 60.f},
-								{255, 0, 0}
+								{fbwidth / 2.f, fbheight / 2.f - 50.f},
+								{fbwidth / 2.f - 50.f, fbheight / 2.f + 50.f},
+								{fbwidth / 2.f + 50.f, fbheight / 2.f + 50.f},
+								{128, 128, 128}
 			);
 		}
 		break;
 
 		case 5:
 		{
+			// degenerate triangles (line)
 			draw_triangle_solid(surface,
-								{fbwidth / 2.f, fbheight / 2.f - 100.f},
-								{fbwidth / 2.f - 100.f, fbheight / 2.f + 100.f},
-								{fbwidth / 2.f + 100.f, fbheight / 2.f + 100.f},
-								{0, 255, 0}
-			);
+								{100.f, 200.f},
+								{200.f, 200.f},
+								{300.f, 200.f},
+								{255, 0, 0});
 		}
 		break;
 
 		case 6:
 		{
+			// degenerate triangles (perpendicular line)
 			draw_triangle_solid(surface,
-								{fbwidth - 50.f, fbheight - 50.f},
-								{fbwidth - 100.f, fbheight - 100.f},
-								{fbwidth - 10.f, fbheight - 100.f},
-								{0, 0, 255}
-			);
+								{400.f, 100.f},
+								{400.f, 200.f},
+								{400.f, 300.f},
+								{0, 255, 0});
 		}
 		break;
 
 		case 7:
 		{
+			// zero area
 			draw_triangle_solid(surface,
-								{-50.f, fbheight - 50.f},
-								{200.f, fbheight + 50.f},
-								{50.f, fbheight - 200.f},
-								{255, 255, 0}
+								{250.f, 250.f},
+								{250.f, 250.f},
+								{250.f, 250.f},
+								{0, 0, 255}
 			);
 		}
 		break;
 
 		case 8:
 		{
+			// point is out of the screen
 			draw_triangle_solid(surface,
-								{fbwidth / 2.f - 150.f, fbheight - 20.f},
-								{fbwidth / 2.f + 150.f, fbheight - 20.f},
-								{fbwidth / 2.f, fbheight - 80.f},
-								{0, 255, 255}
+								{-50.f, -50.f},
+								{100.f, fbheight + 100.f},
+								{fbwidth + 50.f, fbheight / 2.f},
+								{255, 255, 0}
 			);
 		}
 		break;
 
 		case 9:
 		{
+			// tremendous one
 			draw_triangle_solid(surface,
-								{fbwidth / 2.f - 10.f, fbheight / 2.f + 10.f},
-								{fbwidth / 2.f + 10.f, fbheight / 2.f + 10.f},
-								{fbwidth / 2.f, fbheight / 2.f - 20.f},
+								{-1000.f, -1000.f},
+								{fbwidth + 1000.f, fbheight / 2.f},
+								{fbwidth / 2.f, fbheight + 1000.f},
 								{255, 0, 255}
 			);
 		}
 		break;
 		}
-
 		context.draw(surface);
 		// Display results
 		glfwSwapBuffers(window);
