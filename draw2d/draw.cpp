@@ -68,18 +68,45 @@ void draw_triangle_wireframe( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2
 	(void)aColor;
 }
 
-void draw_triangle_solid( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, ColorU8_sRGB aColor )
+void draw_triangle_solid(Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, ColorU8_sRGB aColor)
 {
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
+    // Step 1: Sort vertices by y-coordinate (ascending order)
+    if (aP0.y > aP1.y) std::swap(aP0, aP1);
+    if (aP0.y > aP2.y) std::swap(aP0, aP2);
+    if (aP1.y > aP2.y) std::swap(aP1, aP2);
 
-	//TODO: remove the following when you start your implementation
-	(void)aSurface; // Avoid warnings about unused arguments until the function
-	(void)aP0;   // is properly implemented.
-	(void)aP1;
-	(void)aP2;
-	(void)aColor;
+    int height = aSurface.get_height();
+    int width = aSurface.get_width();
+
+    auto draw_scanline = [&](int y, int x_start, int x_end) {
+        if (y < 0 || y >= height) return; // Skip out-of-bounds rows
+        x_start = std::max(0, std::min(x_start, width - 1));
+        x_end = std::max(0, std::min(x_end, width - 1));
+        for (int x = x_start; x <= x_end; ++x) {
+            aSurface.set_pixel_srgb(x, y, aColor);
+        }
+    };
+
+    auto interpolate_x = [](float y, Vec2f p0, Vec2f p1) -> float {
+        if (p0.y == p1.y) return p0.x; // Avoid division by zero
+        return p0.x + (y - p0.y) * (p1.x - p0.x) / (p1.y - p0.y);
+    };
+
+    // Step 2: Handle the lower part of the triangle (from aP0 to aP1)
+    for (int y = static_cast<int>(aP0.y); y <= static_cast<int>(aP1.y); ++y) {
+        int x_start = static_cast<int>(interpolate_x(y, aP0, aP2));
+        int x_end = static_cast<int>(interpolate_x(y, aP0, aP1));
+        if (x_start > x_end) std::swap(x_start, x_end);
+        draw_scanline(y, x_start, x_end);
+    }
+
+    // Step 3: Handle the upper part of the triangle (from aP1 to aP2)
+    for (int y = static_cast<int>(aP1.y); y <= static_cast<int>(aP2.y); ++y) {
+        int x_start = static_cast<int>(interpolate_x(y, aP0, aP2));
+        int x_end = static_cast<int>(interpolate_x(y, aP1, aP2));
+        if (x_start > x_end) std::swap(x_start, x_end);
+        draw_scanline(y, x_start, x_end);
+    }
 }
 
 void draw_triangle_interp( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, ColorF aC0, ColorF aC1, ColorF aC2 )
