@@ -60,24 +60,24 @@ void blit_masked(Surface& aSurface, ImageRGBA const& aImage, Vec2f aPosition)
     int surfaceWidth = aSurface.get_width();
     int surfaceHeight = aSurface.get_height();
 
-    // 遍历图像的每个像素
+    // Go through every pixel of the image
     for (int y = 0; y < imageHeight; ++y) {
         for (int x = 0; x < imageWidth; ++x) {
-            // 获取图像中的当前像素颜色
+            // Gets the current pixel color in the image
             ColorU8_sRGB_Alpha color = aImage.get_pixel(x, y);
 
-            // 跳过 Alpha 值小于 128 的像素
+            // Skip pixels with an Alpha value less than 128
             if (color.a < 128) {
                 continue;
             }
 
-            // 计算像素在目标 Surface 上的位置
+            // Calculate the pixel position on the target Surface
             int destX = startX + x;
             int destY = startY + y;
 
-            // 检查目标位置是否在 Surface 的范围内
+            // Check that the target location is within range of the Surface
             if (destX >= 0 && destX < surfaceWidth && destY >= 0 && destY < surfaceHeight) {
-                // 在目标 Surface 上设置像素颜色，忽略 Alpha 通道
+                // Set the pixel color on the target Surface, ignoring the Alpha channel
                 aSurface.set_pixel_srgb(destX, destY, {color.r, color.g, color.b});
             }
         }
