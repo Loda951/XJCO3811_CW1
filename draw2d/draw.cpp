@@ -88,8 +88,8 @@ void draw_triangle_solid(Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, Col
     }
 
     // Step 3: Check for zero-area triangles
-    float area = (aP1.x - aP0.x) * (aP2.y - aP0.y) - (aP2.x - aP0.x) * (aP1.y - aP0.y);
-    if (std::abs(area) < 1e-6) {
+    int area = (aP1.x - aP0.x) * (aP2.y - aP0.y) - (aP2.x - aP0.x) * (aP1.y - aP0.y);
+    if (std::abs(area) < 100) {
         return; // Area is too close to zero, skip drawing
     }
 
@@ -106,25 +106,32 @@ void draw_triangle_solid(Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, Col
         }
     };
 
-    // Step 5: Define a lambda function for linear interpolation of x based on y
-    auto interpolate_x = [](float y, Vec2f p0, Vec2f p1) -> float {
-        if (p0.y == p1.y) return p0.x; // Avoid division by zero for horizontal lines
-        return p0.x + (y - p0.y) * (p1.x - p0.x) / (p1.y - p0.y);
+    // Step 5: Define a lambda function for linear interpolation of x based on y (using integer arithmetic)
+    auto interpolate_x = [](int y, Vec2f p0, Vec2f p1) -> int {
+        if (p0.y == p1.y) return static_cast<int>(p0.x); // Avoid division by zero for horizontal lines
+        return static_cast<int>(p0.x + (y - p0.y) * (p1.x - p0.x) / (p1.y - p0.y));
     };
 
-    // Step 6: Handle the lower part of the triangle (from aP0 to aP1)
-    for (int y = static_cast<int>(aP0.y); y <= static_cast<int>(aP1.y); ++y) {
-        int x_start = static_cast<int>(std::round(interpolate_x(y, aP0, aP2)));
-        int x_end = static_cast<int>(std::round(interpolate_x(y, aP0, aP1)));
-        if (x_start > x_end) std::swap(x_start, x_end);
-        draw_scanline(y, x_start, x_end);
-    }
+    // Step 6: Handle the whole triangle with a single loop
+    int y_start = static_cast<int>(aP0.y);
+    int y_end = static_cast<int>(aP2.y);
+    
+    for (int y = y_start; y <= y_end; ++y) {
+        int x_start, x_end;
 
-    // Step 7: Handle the upper part of the triangle (from aP1 to aP2)
-    for (int y = static_cast<int>(aP1.y); y <= static_cast<int>(aP2.y); ++y) {
-        int x_start = static_cast<int>(std::round(interpolate_x(y, aP0, aP2)));
-        int x_end = static_cast<int>(std::round(interpolate_x(y, aP1, aP2)));
+        if (y < static_cast<int>(aP1.y)) {
+            // Lower part (from aP0 to aP1)
+            x_start = interpolate_x(y, aP0, aP2);
+            x_end = interpolate_x(y, aP0, aP1);
+        } else {
+            // Upper part (from aP1 to aP2)
+            x_start = interpolate_x(y, aP0, aP2);
+            x_end = interpolate_x(y, aP1, aP2);
+        }
+
+        // Ensure x_start <= x_end
         if (x_start > x_end) std::swap(x_start, x_end);
+
         draw_scanline(y, x_start, x_end);
     }
 }
