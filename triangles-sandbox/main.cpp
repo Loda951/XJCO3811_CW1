@@ -191,39 +191,28 @@ try
 		case 1:
 		{
 			// Centered triangle
-			draw_triangle_interp(surface,
-								 {fbwidth / 2.f, fbheight - 100.f},
-								 {100.f, 100.f},
-								 {fbwidth - 100.f, 100.f},
-								 {1.f, 1.f, 0.f},
-								 {1.f, 0.f, 1.f},
-								 {0.f, 1.f, 1.f});
+			draw_triangle_solid(surface, {30.f, 30.f}, {80.f, 30.f}, {55.f, 80.f}, {255, 0, 0});
 		}
 		break;
 
 		case 2:
 		{
-			// Centered triangle, permuted coordinates
-			draw_triangle_interp(surface,
-								 {fbwidth - 100.f, 100.f},
-								 {fbwidth / 2.f, fbheight - 100.f},
-								 {100.f, 100.f},
-								 {0.f, 1.f, 1.f},
-								 {1.f, 1.f, 0.f},
-								 {1.f, 0.f, 1.f});
+			// Gradient from Red to Green to Blue
+			draw_triangle_interp(
+				surface,
+				{30.f, 30.f}, {80.f, 30.f}, {55.f, 80.f},
+				{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f});
 		}
 		break;
 
 		case 3:
 		{
-			// Extending out of screen
-			draw_triangle_interp(surface,
-								 {float(fbwidth), fbheight - 100.f},
-								 {fbwidth / 2.f + 100.f, 100.f},
-								 {fbwidth * 3.f / 2.f - 100.f, 100.f},
-								 {1.f, 1.f, 0.f},
-								 {1.f, 0.f, 1.f},
-								 {0.f, 1.f, 1.f});
+			// Draw a triangle with a simple solid gradient from red to green
+			draw_triangle_interp(
+				surface,
+				{30.f, 30.f}, {80.f, 30.f}, {55.f, 80.f},
+				{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f} // Red to Green gradient
+			);
 		}
 		break;
 
@@ -234,8 +223,7 @@ try
 								{fbwidth / 2.f, fbheight / 2.f - 50.f},
 								{fbwidth / 2.f - 50.f, fbheight / 2.f + 50.f},
 								{fbwidth / 2.f + 50.f, fbheight / 2.f + 50.f},
-								{128, 128, 128}
-			);
+								{128, 128, 128});
 		}
 		break;
 
@@ -268,8 +256,7 @@ try
 								{250.f, 250.f},
 								{250.f, 250.f},
 								{250.f, 250.f},
-								{0, 0, 255}
-			);
+								{0, 0, 255});
 		}
 		break;
 
@@ -280,8 +267,7 @@ try
 								{-50.f, -50.f},
 								{100.f, fbheight + 100.f},
 								{fbwidth + 50.f, fbheight / 2.f},
-								{255, 255, 0}
-			);
+								{255, 255, 0});
 		}
 		break;
 
@@ -292,8 +278,7 @@ try
 								{-1000.f, -1000.f},
 								{fbwidth + 1000.f, fbheight / 2.f},
 								{fbwidth / 2.f, fbheight + 1000.f},
-								{255, 0, 255}
-			);
+								{255, 0, 255});
 		}
 		break;
 		}

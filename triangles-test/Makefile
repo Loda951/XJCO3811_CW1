@@ -76,12 +76,14 @@ GENERATED += $(OBJDIR)/degenerate.o
 GENERATED += $(OBJDIR)/helpers.o
 GENERATED += $(OBJDIR)/scenario-1.o
 GENERATED += $(OBJDIR)/scenario-2.o
+GENERATED += $(OBJDIR)/scenario-3.o
 GENERATED += $(OBJDIR)/specials.o
 GENERATED += $(OBJDIR)/srgb.o
 OBJECTS += $(OBJDIR)/degenerate.o
 OBJECTS += $(OBJDIR)/helpers.o
 OBJECTS += $(OBJDIR)/scenario-1.o
 OBJECTS += $(OBJDIR)/scenario-2.o
+OBJECTS += $(OBJDIR)/scenario-3.o
 OBJECTS += $(OBJDIR)/specials.o
 OBJECTS += $(OBJDIR)/srgb.o
 
@@ -157,6 +159,9 @@ $(OBJDIR)/scenario-1.o: scenario-1.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/scenario-2.o: scenario-2.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/scenario-3.o: scenario-3.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/specials.o: specials.cpp
