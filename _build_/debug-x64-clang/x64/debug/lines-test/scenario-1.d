@@ -987,7 +987,10 @@
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__charconv/to_chars.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/map \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__tree \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/set
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/set \
+  helpers.hpp ../draw2d/forward.hpp ../draw2d/surface.hpp \
+  ../draw2d/color.hpp ../draw2d/color.inl ../draw2d/surface.inl \
+  ../draw2d/draw.hpp ../draw2d/../vmlib/vec2.hpp
 ../third_party/catch2/include/catch2/catch_amalgamated.hpp:
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/TargetConditionals.h:
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/string_view:
@@ -1976,3 +1979,11 @@
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/map:
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__tree:
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/set:
+helpers.hpp:
+../draw2d/forward.hpp:
+../draw2d/surface.hpp:
+../draw2d/color.hpp:
+../draw2d/color.inl:
+../draw2d/surface.inl:
+../draw2d/draw.hpp:
+../draw2d/../vmlib/vec2.hpp:

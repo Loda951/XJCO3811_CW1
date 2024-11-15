@@ -80,6 +80,7 @@ GENERATED += $(OBJDIR)/scenario-1.o
 GENERATED += $(OBJDIR)/scenario-2.o
 GENERATED += $(OBJDIR)/scenario-3.o
 GENERATED += $(OBJDIR)/scenario-4.o
+GENERATED += $(OBJDIR)/scenario-5.o
 GENERATED += $(OBJDIR)/specials.o
 GENERATED += $(OBJDIR)/thin_line.o
 OBJECTS += $(OBJDIR)/clip.o
@@ -90,6 +91,7 @@ OBJECTS += $(OBJDIR)/scenario-1.o
 OBJECTS += $(OBJDIR)/scenario-2.o
 OBJECTS += $(OBJDIR)/scenario-3.o
 OBJECTS += $(OBJDIR)/scenario-4.o
+OBJECTS += $(OBJDIR)/scenario-5.o
 OBJECTS += $(OBJDIR)/specials.o
 OBJECTS += $(OBJDIR)/thin_line.o
 
@@ -177,6 +179,9 @@ $(OBJDIR)/scenario-3.o: scenario-3.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/scenario-4.o: scenario-4.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/scenario-5.o: scenario-5.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/specials.o: specials.cpp
