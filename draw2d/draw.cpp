@@ -74,126 +74,61 @@ void draw_triangle_wireframe(Surface &aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2,
 	(void)aColor;
 }
 
-void draw_triangle_solid(Surface &aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, ColorU8_sRGB aColor)
+void draw_triangle_solid(Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, ColorU8_sRGB aColor)
 {
     // Step 1: Sort vertices by y-coordinate (ascending order)
     if (aP0.y > aP1.y) std::swap(aP0, aP1);
     if (aP0.y > aP2.y) std::swap(aP0, aP2);
     if (aP1.y > aP2.y) std::swap(aP1, aP2);
 
-    // Step 2: Screen bounds
-    int width = aSurface.get_width();
-    int height = aSurface.get_height();
-
-    // Clipping all points to screen bounds
-    auto clip_x = [&](float x)
-    { return std::max(7.0f, std::min(x, static_cast<float>(width - 5))); };
-    auto clip_y = [&](float y)
-    { return std::max(6.0f, std::min(y, static_cast<float>(height - 5))); };
-
-    aP0.x = clip_x(aP0.x); aP0.y = clip_y(aP0.y);
-    aP1.x = clip_x(aP1.x); aP1.y = clip_y(aP1.y);
-    aP2.x = clip_x(aP2.x); aP2.y = clip_y(aP2.y);
-
-    // Step 3: Check for degenerate triangles
-    if ((aP0.y == aP1.y && aP1.y == aP2.y) || (aP0.x == aP1.x && aP1.x == aP2.x))
+    // Step 2: Check for degenerate triangles
+    if ((aP0.y == aP1.y && aP1.y == aP2.y) || (aP0.x == aP1.x && aP1.x == aP2.x)) {
+        // All vertices are collinear, nothing to draw
         return;
+    }
 
-    // Step 4: Check for zero-area triangles
+    // Step 3: Check for zero-area triangles
     float area = (aP1.x - aP0.x) * (aP2.y - aP0.y) - (aP2.x - aP0.x) * (aP1.y - aP0.y);
-    if (std::abs(area) < 1e-6) return;
+    if (std::abs(area) < 1e-6) {
+        return; // Area is too close to zero, skip drawing
+    }
 
-    // Step 5: Define a lambda function for drawing a scanline within bounds
-    auto draw_scanline = [&](int y, int x_start, int x_end)
-    {
+    int height = aSurface.get_height();
+    int width = aSurface.get_width();
+
+    // Step 4: Define a lambda function for drawing a scanline within bounds
+    auto draw_scanline = [&](int y, int x_start, int x_end) {
+        if (y < 0 || y >= height) return; // Skip out-of-bounds rows
         x_start = std::max(0, std::min(x_start, width - 1));
         x_end = std::max(0, std::min(x_end, width - 1));
-        if (x_start > x_end) std::swap(x_start, x_end);
-        for (int x = x_start; x <= x_end; ++x)
-        {
+        for (int x = x_start; x <= x_end; ++x) {
             aSurface.set_pixel_srgb(x, y, aColor);
         }
     };
 
-    // Optimization: Precompute inverse slopes
-    float dxdy_p0p1 = 0.0f, dxdy_p0p2 = 0.0f, dxdy_p1p2 = 0.0f;
-    if (aP1.y - aP0.y != 0) dxdy_p0p1 = (aP1.x - aP0.x) / (aP1.y - aP0.y);
-    if (aP2.y - aP0.y != 0) dxdy_p0p2 = (aP2.x - aP0.x) / (aP2.y - aP0.y);
-    if (aP2.y - aP1.y != 0) dxdy_p1p2 = (aP2.x - aP1.x) / (aP2.y - aP1.y);
+    // Step 5: Define a lambda function for linear interpolation of x based on y
+    auto interpolate_x = [](float y, Vec2f p0, Vec2f p1) -> float {
+        if (p0.y == p1.y) return p0.x; // Avoid division by zero for horizontal lines
+        return p0.x + (y - p0.y) * (p1.x - p0.x) / (p1.y - p0.y);
+    };
 
-    // Decide if triangle is flat-top, flat-bottom, or needs to be split
-    if (aP1.y == aP0.y) // Flat-top
-    {
-        if (aP1.x < aP0.x) std::swap(aP0, aP1);
-        float yStart = std::ceil(aP0.y);
-        float yEnd = std::floor(aP2.y);
-
-        float xLeft = aP0.x + (yStart - aP0.y) * dxdy_p0p2;
-        float xRight = aP1.x + (yStart - aP1.y) * dxdy_p1p2;
-
-        for (int y = static_cast<int>(yStart); y <= static_cast<int>(yEnd); ++y)
-        {
-            draw_scanline(y, static_cast<int>(xLeft), static_cast<int>(xRight));
-            xLeft += dxdy_p0p2;
-            xRight += dxdy_p1p2;
-        }
+    // Step 6: Handle the lower part of the triangle (from aP0 to aP1)
+    for (int y = static_cast<int>(aP0.y); y <= static_cast<int>(aP1.y); ++y) {
+        int x_start = static_cast<int>(std::round(interpolate_x(y, aP0, aP2)));
+        int x_end = static_cast<int>(std::round(interpolate_x(y, aP0, aP1)));
+        if (x_start > x_end) std::swap(x_start, x_end);
+        draw_scanline(y, x_start, x_end);
     }
-    else if (aP1.y == aP2.y) // Flat-bottom
-    {
-        if (aP2.x < aP1.x) std::swap(aP1, aP2);
-        float yStart = std::ceil(aP0.y);
-        float yEnd = std::floor(aP1.y);
 
-        float xLeft = aP0.x + (yStart - aP0.y) * dxdy_p0p1;
-        float xRight = aP0.x + (yStart - aP0.y) * dxdy_p0p2;
-
-        for (int y = static_cast<int>(yStart); y <= static_cast<int>(yEnd); ++y)
-        {
-            draw_scanline(y, static_cast<int>(xLeft), static_cast<int>(xRight));
-            xLeft += dxdy_p0p1;
-            xRight += dxdy_p0p2;
-        }
-    }
-    else // General triangle
-    {
-        // Split the triangle into a flat-bottom and a flat-top triangle
-        float alpha = (aP1.y - aP0.y) / (aP2.y - aP0.y);
-        float newX = aP0.x + alpha * (aP2.x - aP0.x);
-        Vec2f aP3(newX, aP1.y);
-
-        // First half (flat-bottom)
-        {
-            float yStart = std::ceil(aP0.y);
-            float yEnd = std::floor(aP1.y) - 1;
-
-            float xLeft = aP0.x + (yStart - aP0.y) * dxdy_p0p1;
-            float xRight = aP0.x + (yStart - aP0.y) * dxdy_p0p2;
-
-            for (int y = static_cast<int>(yStart); y <= static_cast<int>(yEnd); ++y)
-            {
-                draw_scanline(y, static_cast<int>(xLeft), static_cast<int>(xRight));
-                xLeft += dxdy_p0p1;
-                xRight += dxdy_p0p2;
-            }
-        }
-
-        // Second half (flat-top)
-        {
-            float yStart = std::ceil(aP1.y);
-            float yEnd = std::floor(aP2.y);
-
-            float xLeft = aP1.x + (yStart - aP1.y) * dxdy_p1p2;
-            float xRight = aP3.x + (yStart - aP1.y) * dxdy_p0p2;
-
-            for (int y = static_cast<int>(yStart); y <= static_cast<int>(yEnd); ++y)
-            {
-                draw_scanline(y, static_cast<int>(xLeft), static_cast<int>(xRight));
-                xLeft += dxdy_p1p2;
-                xRight += dxdy_p0p2;
-            }
-        }
+    // Step 7: Handle the upper part of the triangle (from aP1 to aP2)
+    for (int y = static_cast<int>(aP1.y); y <= static_cast<int>(aP2.y); ++y) {
+        int x_start = static_cast<int>(std::round(interpolate_x(y, aP0, aP2)));
+        int x_end = static_cast<int>(std::round(interpolate_x(y, aP1, aP2)));
+        if (x_start > x_end) std::swap(x_start, x_end);
+        draw_scanline(y, x_start, x_end);
     }
 }
+
 
 void draw_triangle_interp(Surface &aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, ColorF aC0, ColorF aC1, ColorF aC2)
 {
